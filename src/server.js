@@ -19,7 +19,7 @@ class Server {
 
         res.json({ skylink, sponsor });
       } catch (error) {
-        res.status(400).send(error.message);
+        res.status(400).contentType("text/plain; charset=utf-8").send(error.message);
       }
     });
   }

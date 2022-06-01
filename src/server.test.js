@@ -45,6 +45,12 @@ describe("Server", () => {
 
         expect(response.status).toBe(400);
       });
+
+      it("responds with text/plain content-type", async () => {
+        const response = await fetch("http://0.0.0.0:1234/dnslink/fake-domain.com");
+
+        expect(response.headers.get("content-type")).toEqual("text/plain; charset=utf-8");
+      });
     });
   });
 });
