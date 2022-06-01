@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@types/jest": "^27.5.1",
+    "codecov": "^3.8.3",
     "jest": "^28.1.0",
     "node-fetch": "2",
     "prettier": "^2.6.2"
@@ -17,7 +18,7 @@
     "start": "node src/index.js",
     "format": "yarn prettier --write src",
     "lint": "yarn prettier --check src",
-    "test": "jest src",
-    "test:coverage": "yarn test --coverage"
+    "test": "jest src --coverage && codecov",
+    "test:watch": "jest src --watch"
   }
 }
