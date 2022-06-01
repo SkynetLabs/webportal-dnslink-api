@@ -8,11 +8,16 @@
     "is-valid-domain": "^0.1.6"
   },
   "devDependencies": {
+    "@types/jest": "^27.5.1",
+    "jest": "^28.1.0",
+    "node-fetch": "2",
     "prettier": "^2.6.2"
   },
   "scripts": {
-    "format": "yarn prettier --write .",
-    "lint": "yarn prettier --check .",
-    "test": "echo 'Warning: no test script specified'"
+    "start": "node src/index.js",
+    "format": "yarn prettier --write src",
+    "lint": "yarn prettier --check src",
+    "test": "jest src",
+    "test:coverage": "yarn test --coverage"
   }
 }
