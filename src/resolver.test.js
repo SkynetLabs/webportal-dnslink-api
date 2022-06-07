@@ -35,6 +35,8 @@ const mockedDnsResolveTxt = (error, addresses) => (lookup, callback) => callback
 describe("Resolver", () => {
   let resolver;
 
+  const resolve = () => resolver.resolve("dummy-domain.com");
+
   beforeEach(() => {
     resolver = new Resolver();
   });
@@ -44,7 +46,7 @@ describe("Resolver", () => {
       expect(() => resolver.validateRequest({ params: { name: "xyz" } })).toThrow(InvalidRequestError);
     });
 
-    it("does not throws for valid domains", () => {
+    it("does not throw for valid domains", () => {
       expect(() => resolver.validateRequest({ params: { name: "xyz.com" } })).not.toThrow();
     });
   });
@@ -63,7 +65,7 @@ describe("Resolver", () => {
       });
 
       it("returns skylink and sponsor properties", async () => {
-        expect(await resolver.resolve("valid-sponsored-skylink.com")).toEqual({
+        expect(await resolve()).toEqual({
           skylink: "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA",
         });
       });
@@ -75,7 +77,7 @@ describe("Resolver", () => {
       });
 
       it("returns skylink and sponsor properties", async () => {
-        expect(await resolver.resolve("valid-sponsored-skylink.com")).toEqual({
+        expect(await resolve()).toEqual({
           skylink: "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA",
           sponsor: "dummySponsorKey1",
         });
@@ -88,7 +90,7 @@ describe("Resolver", () => {
       });
 
       it("throws NoSkynetDNSLinksFoundError", () => {
-        expect(resolver.resolve("no-skynet-dnslinks.com")).rejects.toThrow(NoSkynetDNSLinksFoundError);
+        expect(resolve()).rejects.toThrow(NoSkynetDNSLinksFoundError);
       });
     });
 
@@ -98,7 +100,7 @@ describe("Resolver", () => {
       });
 
       it("throws MultipleSkylinksError", () => {
-        expect(resolver.resolve("multiple-skylinks.com")).rejects.toThrow(MultipleSkylinksError);
+        expect(resolve()).rejects.toThrow(MultipleSkylinksError);
       });
     });
 
@@ -108,7 +110,7 @@ describe("Resolver", () => {
       });
 
       it("throws InvalidSkylinkError", () => {
-        expect(resolver.resolve("invalid-skylink.com")).rejects.toThrow(InvalidSkylinkError);
+        expect(resolve()).rejects.toThrow(InvalidSkylinkError);
       });
     });
 
@@ -118,7 +120,7 @@ describe("Resolver", () => {
       });
 
       it("throws MultipleSponsorKeyRecordsError", () => {
-        expect(resolver.resolve("multiple-sponsor-keys.com")).rejects.toThrow(MultipleSponsorKeyRecordsError);
+        expect(resolve()).rejects.toThrow(MultipleSponsorKeyRecordsError);
       });
     });
 
@@ -128,7 +130,7 @@ describe("Resolver", () => {
       });
 
       it("throws ResolutionError", () => {
-        expect(resolver.resolve("fake.dom.ain")).rejects.toThrow(ResolutionError);
+        expect(resolve()).rejects.toThrow(ResolutionError);
       });
     });
 
@@ -138,7 +140,7 @@ describe("Resolver", () => {
       });
 
       it("throws ResolutionError", () => {
-        expect(resolver.resolve("fake.dom.ain")).rejects.toThrow(ResolutionError);
+        expect(resolve()).rejects.toThrow(ResolutionError);
       });
     });
 
@@ -148,7 +150,7 @@ describe("Resolver", () => {
       });
 
       it("throws ResolutionError", () => {
-        expect(resolver.resolve("fake.dom.ain")).rejects.toThrow(ResolutionError);
+        expect(resolve()).rejects.toThrow(ResolutionError);
       });
     });
 
@@ -160,7 +162,7 @@ describe("Resolver", () => {
       });
 
       it("throws ResolutionError", () => {
-        expect(resolver.resolve("fake.dom.ain")).rejects.toThrow(ResolutionError);
+        expect(resolve()).rejects.toThrow(ResolutionError);
       });
     });
   });
