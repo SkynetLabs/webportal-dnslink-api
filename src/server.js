@@ -24,8 +24,8 @@ class Server {
     });
   }
 
-  start(port, host) {
-    this.server = this.app.listen(port, (host = "0.0.0.0"), (error) => {
+  start(port, host = "0.0.0.0") {
+    this.server = this.app.listen(port, host, (error) => {
       if (error) throw error;
 
       console.info(`Server listening at http://${host}:${port}`);
