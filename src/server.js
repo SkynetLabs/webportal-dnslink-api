@@ -1,4 +1,6 @@
 const express = require("express");
+
+const logger = require("./logger");
 const { Resolver } = require("./resolver");
 
 class Server {
@@ -28,7 +30,7 @@ class Server {
     this.server = this.app.listen(port, host, (error) => {
       if (error) throw error;
 
-      console.info(`Server listening at http://${host}:${port}`);
+      logger.info(`Server listening at http://${host}:${port}`);
     });
   }
 }

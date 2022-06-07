@@ -5,7 +5,8 @@
   "license": "SEE LICENSE IN LICENSE.md",
   "dependencies": {
     "express": "^4.18.1",
-    "is-valid-domain": "^0.1.6"
+    "is-valid-domain": "^0.1.6",
+    "winston": "^3.7.2"
   },
   "devDependencies": {
     "@types/jest": "^27.5.1",

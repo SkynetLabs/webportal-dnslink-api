@@ -1,6 +1,8 @@
 const dns = require("dns");
 const isValidDomain = require("is-valid-domain");
 
+const logger = require("./logger");
+
 const dnslinkNamespace = "skynet-ns";
 const sponsorNamespace = "skynet-sponsor-key";
 const dnslinkRegExp = new RegExp(`^dnslink=/${dnslinkNamespace}/.+$`);
@@ -69,12 +71,12 @@ class Resolver {
           // extract just the key part from the record
           const sponsor = sponsors[0].substring(sponsors[0].indexOf("=") + 1);
 
-          console.log(`${domainName} => ${skylink} | sponsor: ${sponsor}`);
+          logger.info(`${domainName} => ${skylink} | sponsor: ${sponsor}`);
 
           return resolve({ skylink, sponsor });
         }
 
-        console.log(`${domainName} => ${skylink}`);
+        logger.info(`${domainName} => ${skylink}`);
 
         return resolve({ skylink });
       });
