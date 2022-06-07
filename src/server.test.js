@@ -13,6 +13,40 @@ describe("Server", () => {
     app.server.close();
   });
 
+  describe("- live requests -", () => {
+    it("no-dns-link.skynetlabs.io", async () => {
+      const response = await fetch("http://0.0.0.0:1234/dnslink/sponsored-dns-link.skynetlabs.io");
+      const expectedResponse = {
+        skylink: "MABdWWku6YETM2zooGCjQi26Rs4a6Hb74q26i-vMMcximQ",
+        sponsor: "JDCLOJIJ7NJRSN4QRD7EDFVNP7MPJ24O856D57NE3FV2PFBAT6T0",
+      };
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(expectedResponse);
+    });
+
+    it("dns-link.skynetlabs.io", async () => {
+      const response = await fetch("http://0.0.0.0:1234/dnslink/dns-link.skynetlabs.io");
+      const expectedResponse = {
+        skylink: "MABdWWku6YETM2zooGCjQi26Rs4a6Hb74q26i-vMMcximQ",
+      };
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(expectedResponse);
+    });
+
+    it("sponsored-dns-link.skynetlabs.io", async () => {
+      const response = await fetch("http://0.0.0.0:1234/dnslink/sponsored-dns-link.skynetlabs.io");
+      const expectedResponse = {
+        skylink: "MABdWWku6YETM2zooGCjQi26Rs4a6Hb74q26i-vMMcximQ",
+        sponsor: "JDCLOJIJ7NJRSN4QRD7EDFVNP7MPJ24O856D57NE3FV2PFBAT6T0",
+      };
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(expectedResponse);
+    });
+  });
+
   describe("/dnslink/:domainName route", () => {
     describe("when domain is configured with a skylink", () => {
       const configuredSkylink = "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA";
@@ -28,6 +62,29 @@ describe("Server", () => {
         expect(response.status).toBe(200);
         expect(await response.json()).toEqual({
           skylink: configuredSkylink,
+        });
+      });
+    });
+
+    describe("when domain is configured with a skylink and sponsor key", () => {
+      const configuredSkylink = "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA";
+      const configuredSponsorKey = "sponsor-key-1234";
+
+      beforeAll(() => {
+        jest.spyOn(app.resolver, "validateRequest").mockImplementation(() => {});
+        jest.spyOn(app.resolver, "resolve").mockResolvedValue({
+          skylink: configuredSkylink,
+          sponsor: configuredSponsorKey,
+        });
+      });
+
+      it("responds with json data", async () => {
+        const response = await fetch("http://0.0.0.0:1234/dnslink/skynetlabs.com");
+
+        expect(response.status).toBe(200);
+        expect(await response.json()).toEqual({
+          skylink: configuredSkylink,
+          sponsor: configuredSponsorKey,
         });
       });
     });
