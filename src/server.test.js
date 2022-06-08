@@ -14,6 +14,9 @@ describe("Server", () => {
   });
 
   describe("- live requests -", () => {
+    /**
+     * This section of tests is performed on actual, live domains (these are not mocked).
+     */
     it("no-dns-link.skynetlabs.io", async () => {
       const response = await fetch("http://0.0.0.0:1234/dnslink/sponsored-dns-link.skynetlabs.io");
       const expectedResponse = {
