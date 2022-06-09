@@ -50,9 +50,10 @@ describe("End-to-end tests", () => {
 
   it("malformed-dns-link.skynetlabs.io", async () => {
     const response = await fetch("http://0.0.0.0:1235/dnslink/malformed-dns-link.skynetlabs.io");
-    const expectedResponse = "asd"
 
     expect(response.status).toBe(400);
-    expect(await response.text()).toMatch(/TXT record with skynet dnslink for _dnslink.malformed-dns-link.skynetlabs.io contains invalid skylink/);
+    expect(await response.text()).toMatch(
+      /TXT record with skynet dnslink for _dnslink.malformed-dns-link.skynetlabs.io contains invalid skylink/
+    );
   });
 });
