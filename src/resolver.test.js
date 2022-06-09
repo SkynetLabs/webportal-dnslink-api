@@ -1,4 +1,5 @@
 const dns = require("dns");
+const { hasUncaughtExceptionCaptureCallback } = require("process");
 const {
   Resolver,
   InvalidRequestError,
@@ -42,12 +43,15 @@ describe("Resolver", () => {
   });
 
   describe(".validateRequest", () => {
-    it("throws on invalid domain", () => {
-      expect(() => resolver.validateRequest({ params: { name: "xyz" } })).toThrow(InvalidRequestError);
+    const INVALID_DOMAINS = ["xyz", ".com", "invalid--domain.com"];
+    const VALID_DOMAINS = ["skynetlabs.com", "siasky.net", "skynetlabs.io"];
+
+    it.each(INVALID_DOMAINS)("throws for invalid domain (%s)", (domainName) => {
+      expect(() => resolver.validateRequest({ params: { name: domainName } })).toThrow(InvalidRequestError);
     });
 
-    it("does not throw for valid domains", () => {
-      expect(() => resolver.validateRequest({ params: { name: "xyz.com" } })).not.toThrow();
+    it.each(VALID_DOMAINS)("throws for invalid domain (%s)", (domainName) => {
+      expect(() => resolver.validateRequest({ params: { name: domainName } })).not.toThrow();
     });
   });
 

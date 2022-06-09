@@ -136,6 +136,10 @@ class Resolver {
    * @throws {InvalidRequestError}
    */
   validateRequest(req) {
+    // NOTE: this only checks if the domain name is RFC1035-compliant,
+    // not if the domain can actually exist on the Internet.
+    // For example, "weird.domain" is valid in this context, but will raise
+    // an exception later in the process when we try to actually resolve it.
     if (!isValidDomain(req.params.name)) {
       throw new InvalidRequestError(`${req.params.name} is not a valid domain`);
     }
