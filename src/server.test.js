@@ -13,43 +13,6 @@ describe("Server", () => {
     app.server.close();
   });
 
-  describe("- live requests -", () => {
-    /**
-     * This section of tests is performed on actual, live domains (these are not mocked).
-     */
-    it("no-dns-link.skynetlabs.io", async () => {
-      const response = await fetch("http://0.0.0.0:1234/dnslink/sponsored-dns-link.skynetlabs.io");
-      const expectedResponse = {
-        skylink: "MABdWWku6YETM2zooGCjQi26Rs4a6Hb74q26i-vMMcximQ",
-        sponsor: "JDCLOJIJ7NJRSN4QRD7EDFVNP7MPJ24O856D57NE3FV2PFBAT6T0",
-      };
-
-      expect(response.status).toBe(200);
-      expect(await response.json()).toEqual(expectedResponse);
-    });
-
-    it("dns-link.skynetlabs.io", async () => {
-      const response = await fetch("http://0.0.0.0:1234/dnslink/dns-link.skynetlabs.io");
-      const expectedResponse = {
-        skylink: "MABdWWku6YETM2zooGCjQi26Rs4a6Hb74q26i-vMMcximQ",
-      };
-
-      expect(response.status).toBe(200);
-      expect(await response.json()).toEqual(expectedResponse);
-    });
-
-    it("sponsored-dns-link.skynetlabs.io", async () => {
-      const response = await fetch("http://0.0.0.0:1234/dnslink/sponsored-dns-link.skynetlabs.io");
-      const expectedResponse = {
-        skylink: "MABdWWku6YETM2zooGCjQi26Rs4a6Hb74q26i-vMMcximQ",
-        sponsor: "JDCLOJIJ7NJRSN4QRD7EDFVNP7MPJ24O856D57NE3FV2PFBAT6T0",
-      };
-
-      expect(response.status).toBe(200);
-      expect(await response.json()).toEqual(expectedResponse);
-    });
-  });
-
   describe("/dnslink/:domainName route", () => {
     describe("when domain is configured with a skylink", () => {
       const configuredSkylink = "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA";

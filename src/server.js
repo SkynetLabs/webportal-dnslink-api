@@ -21,6 +21,7 @@ class Server {
 
         res.json({ skylink, sponsor });
       } catch (error) {
+        logger.error(error.message);
         res.status(400).contentType("text/plain; charset=utf-8").send(error.message);
       }
     });

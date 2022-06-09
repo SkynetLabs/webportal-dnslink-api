@@ -14,46 +14,46 @@ class Resolver {
   async resolve(domainName) {
     const lookup = `_dnslink.${domainName}`;
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       dns.resolveTxt(lookup, (error, addresses) => {
         if (error) {
           if (error.code === "ENOTFOUND") {
-            throw new ResolutionError(`ENOTFOUND: ${lookup} TXT record doesn't exist`);
+            return reject(new ResolutionError(`ENOTFOUND: ${lookup} TXT record doesn't exist`));
           }
 
           if (error.code === "ENODATA") {
-            throw new ResolutionError(`ENODATA: ${lookup} dns lookup returned no data`);
+            return reject(new ResolutionError(`ENODATA: ${lookup} dns lookup returned no data`));
           }
 
-          throw new ResolutionError(`Failed to fetch ${lookup} TXT record: ${error.message}`);
+          return reject(new ResolutionError(`Failed to fetch ${lookup} TXT record: ${error.message}`));
         }
 
         if (addresses.length === 0) {
-          throw new ResolutionError(`No TXT record found for ${lookup}`);
+          return reject(new ResolutionError(`No TXT record found for ${lookup}`));
         }
 
         const records = addresses.flat();
         const dnslinks = records.filter((record) => dnslinkRegExp.test(record));
 
         if (dnslinks.length === 0) {
-          throw new NoSkynetDNSLinksFoundError(
+          return reject(new NoSkynetDNSLinksFoundError(
             `TXT records for ${lookup} found but none of them contained valid skynet dnslink - ${hint}`
-          );
+          ));
         }
 
         if (dnslinks.length > 1) {
-          throw new MultipleSkylinksError(
+          return reject(new MultipleSkylinksError(
             `Multiple TXT records with valid skynet dnslink found for ${lookup}, only one allowed`
-          );
+          ));
         }
 
         const [dnslink] = dnslinks;
         const matchSkylink = dnslink.match(dnslinkSkylinkRegExp);
 
         if (!matchSkylink) {
-          throw new InvalidSkylinkError(
+          return reject(new InvalidSkylinkError(
             `TXT record with skynet dnslink for ${lookup} contains invalid skylink - ${hint}`
-          );
+          ));
         }
 
         const skylink = matchSkylink[1];
@@ -62,9 +62,9 @@ class Resolver {
         const sponsors = records.filter((record) => sponsorRegExp.test(record));
 
         if (sponsors.length > 1) {
-          throw new MultipleSponsorKeyRecordsError(
+          return reject(new MultipleSponsorKeyRecordsError(
             `Multiple TXT records with valid sponsor key found for ${lookup}, only one allowed`
-          );
+          ));
         }
 
         if (sponsors.length === 1) {
