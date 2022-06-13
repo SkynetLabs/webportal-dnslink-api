@@ -16,7 +16,7 @@ describe("End-to-end tests", () => {
   /**
    * This section of tests is performed on actual, live domains (these are not mocked).
    */
-   it("no-dns-link.skynetlabs.io - no dnslink entry", async () => {
+  it("no-dns-link.skynetlabs.io - no dnslink entry", async () => {
     const response = await fetch("http://0.0.0.0:1235/dnslink/no-dns-link.skynetlabs.io");
     expect(response.status).toBe(400);
     expect(response.headers.get("content-type")).toEqual("text/plain; charset=utf-8");
