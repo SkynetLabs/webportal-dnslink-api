@@ -36,6 +36,9 @@ jobs:
         uses: SkynetLabs/.github/.github/actions/yarn-basic-checks@master
         with:
           node-version: ${{ matrix.node-version }}
+      
+      - name: "Report test coverage impact"
+        uses: codecov/codecov-action@v3
 
   # Make a release if this is a manually trigger job, i.e. workflow_dispatch
   release:
