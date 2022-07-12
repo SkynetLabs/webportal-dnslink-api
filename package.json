@@ -12,7 +12,7 @@
     "codecov": "^3.8.3",
     "jest": "^28.1.0",
     "node-fetch": "2",
-    "prettier": "^2.6.2"
+    "prettier": "^2.7.1"
   },
   "scripts": {
     "start": "node src/index.js",
