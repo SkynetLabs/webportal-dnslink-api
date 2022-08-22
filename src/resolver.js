@@ -69,15 +69,7 @@ class Resolver {
          */
         const records = addresses.flat();
         const dnslinks = records.filter((record) => dnslinkRegExp.test(record));
-
-        // If there are no dnslink records configured with our namespaces, we raise an error.
-        if (dnslinks.length === 0) {
-          return reject(
-            new NoSkynetDNSLinksFoundError(
-              `TXT records for ${lookup} found but none of them contained valid skynet dnslink - ${hint}`
-            )
-          );
-        }
+        const sponsors = records.filter((record) => sponsorRegExp.test(record));
 
         // We currently only allow a single skylink to be tied to a domain name.
         // If there are more skylinks configured, raise an error.
@@ -89,21 +81,6 @@ class Resolver {
           );
         }
 
-        const [dnslink] = dnslinks;
-        const matchSkylink = dnslink.match(dnslinkSkylinkRegExp);
-
-        // Verify if the configured skylink is valid.
-        if (!matchSkylink) {
-          return reject(
-            new InvalidSkylinkError(`TXT record with skynet dnslink for ${lookup} contains invalid skylink - ${hint}`)
-          );
-        }
-
-        const skylink = matchSkylink[1];
-
-        // Check if _dnslink records contain skynet-sponsor-key entries
-        const sponsors = records.filter((record) => sponsorRegExp.test(record));
-
         // We currently only allow a single sponsor key to be configured with a given domain name.
         // If there are more, raise an error.
         if (sponsors.length > 1) {
@@ -114,18 +91,45 @@ class Resolver {
           );
         }
 
-        if (sponsors.length === 1) {
-          // Extract just the key part from the record
-          const sponsor = sponsors[0].substring(sponsors[0].indexOf("=") + 1);
-
-          logger.info(`${domainName} => ${skylink} | sponsor: ${sponsor}`);
-
-          return resolve({ skylink, sponsor });
+        // If there are no dnslink records configured with our namespaces, we raise an error.
+        if (dnslinks.length === 0 && sponsors.length === 0) {
+          return reject(
+            new NoSkynetDNSLinksFoundError(
+              `TXT records for ${lookup} found but none of them contained valid skynet dnslink - ${hint}`
+            )
+          );
         }
 
-        logger.info(`${domainName} => ${skylink}`);
+        // Prepare response object
+        const response = {};
 
-        return resolve({ skylink });
+        if (dnslinks.length === 1) {
+          const [dnslink] = dnslinks;
+          const matchSkylink = dnslink.match(dnslinkSkylinkRegExp);
+
+          // Verify if the configured skylink is valid.
+          if (!matchSkylink) {
+            return reject(
+              new InvalidSkylinkError(`TXT record with skynet dnslink for ${lookup} contains invalid skylink - ${hint}`)
+            );
+          }
+
+          // Add skylink to response object
+          response.skylink = matchSkylink[1];
+        }
+
+        if (sponsors.length === 1) {
+          // Extract just the key part from the record and add it to response object
+          response.sponsor = sponsors[0].substring(sponsors[0].indexOf("=") + 1);
+        }
+
+        // Prepare logger message with skylink and sponsor key records if they exist
+        const info = [`skylink: ${response.skylink}`, `sponsor: ${response.sponsor}`].filter(Boolean).join(" | ");
+
+        // Log the response to the console
+        logger.info(`${domainName} => ${info}`);
+
+        return resolve(response);
       });
     });
   }

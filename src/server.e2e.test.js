@@ -1,6 +1,5 @@
 const fetch = require("node-fetch");
 const { Server } = require("./server");
-const { Resolver, ResolutionError } = require("./resolver");
 
 describe("End-to-end tests", () => {
   const app = new Server();
@@ -27,6 +26,16 @@ describe("End-to-end tests", () => {
     const response = await fetch("http://0.0.0.0:1235/dnslink/dns-link.skynetlabs.io");
     const expectedResponse = {
       skylink: "MABdWWku6YETM2zooGCjQi26Rs4a6Hb74q26i-vMMcximQ",
+    };
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(expectedResponse);
+  });
+
+  it("wildcard-sponsored-dns-link.skynetlabs.io - dnslink entry correct with valid sponsor key", async () => {
+    const response = await fetch("http://0.0.0.0:1235/dnslink/wildcard-sponsored-dns-link.skynetlabs.io");
+    const expectedResponse = {
+      sponsor: "JDCLOJIJ7NJRSN4QRD7EDFVNP7MPJ24O856D57NE3FV2PFBAT6T0",
     };
 
     expect(response.status).toBe(200);
