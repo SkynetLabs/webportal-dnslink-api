@@ -28,6 +28,7 @@ const FIXTURES = {
     ["dnslink=/skynet-ns/AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA"],
     ["skynet-sponsor-key=dummySponsorKey1"],
   ],
+  VALID_SPONSOR: [["skynet-sponsor-key=dummySponsorKey1"]],
   VALID_SKYLINK: [["dnslink=/skynet-ns/AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA"]],
 };
 
@@ -63,14 +64,26 @@ describe("Resolver", () => {
       expect(dns.resolveTxt).toHaveBeenCalledWith("_dnslink.skynetlabs.com", expect.any(Function));
     });
 
-    describe("when TXT records contain a valid skylink", () => {
+    describe("when TXT records contain a valid skylink without sponsor", () => {
       beforeEach(() => {
         dns.resolveTxt.mockImplementationOnce(mockedDnsResolveTxt(null, FIXTURES.VALID_SKYLINK));
       });
 
-      it("returns skylink and sponsor properties", async () => {
+      it("returns skylink property", async () => {
         expect(await resolve()).toEqual({
           skylink: "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA",
+        });
+      });
+    });
+
+    describe("when TXT records contain a valid sponsor without skylink", () => {
+      beforeEach(() => {
+        dns.resolveTxt.mockImplementationOnce(mockedDnsResolveTxt(null, FIXTURES.VALID_SPONSOR));
+      });
+
+      it("returns sponsor property", async () => {
+        expect(await resolve()).toEqual({
+          sponsor: "dummySponsorKey1",
         });
       });
     });
