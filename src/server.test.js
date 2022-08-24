@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 const { Server } = require("./server");
-const { Resolver, ResolutionError } = require("./resolver");
+const { ResolutionError } = require("./dnsResolveTxt");
 
 describe("Server", () => {
   const app = new Server();
@@ -17,7 +17,7 @@ describe("Server", () => {
     describe("when domain is configured with a skylink", () => {
       const configuredSkylink = "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA";
 
-      beforeAll(() => {
+      beforeEach(() => {
         jest.spyOn(app.resolver, "validateRequest").mockImplementation(() => {});
         jest.spyOn(app.resolver, "resolve").mockResolvedValue({ skylink: configuredSkylink });
       });
@@ -36,7 +36,7 @@ describe("Server", () => {
       const configuredSkylink = "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA";
       const configuredSponsorKey = "sponsor-key-1234";
 
-      beforeAll(() => {
+      beforeEach(() => {
         jest.spyOn(app.resolver, "validateRequest").mockImplementation(() => {});
         jest.spyOn(app.resolver, "resolve").mockResolvedValue({
           skylink: configuredSkylink,
@@ -56,7 +56,7 @@ describe("Server", () => {
     });
 
     describe("when domain is not configured with a skylink ", () => {
-      beforeAll(() => {
+      beforeEach(() => {
         jest.spyOn(app.resolver, "validateRequest").mockImplementation(() => {});
         jest
           .spyOn(app.resolver, "resolve")
