@@ -95,15 +95,29 @@ describe("Resolver", () => {
           jest.spyOn(dns, "resolveTxt").mockResolvedValue([[]]);
         });
 
-        it("it should return valid skylink from uri", async () => {
+        it("it should return valid skylink from uri with base64 skylink", async () => {
           expect(await resolve("/AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA")).toEqual({
             path: "/",
             skylink: "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA",
           });
         });
 
-        it("it should return valid skylink from uri with path if path is provided", async () => {
+        it("it should return valid skylink from uri with base32 skylink", async () => {
+          expect(await resolve("/0409g27kkp4cfpj66e52qvhjk60sej6ia1dmemim0pr3qej404gmai0")).toEqual({
+            path: "/",
+            skylink: "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA",
+          });
+        });
+
+        it("it should return valid skylink from uri with base64 skylink with path if path is provided", async () => {
           expect(await resolve("/AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA/foo/bar")).toEqual({
+            path: "/foo/bar",
+            skylink: "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA",
+          });
+        });
+
+        it("it should return valid skylink from uri with base32 skylink path if path is provided", async () => {
+          expect(await resolve("/0409g27kkp4cfpj66e52qvhjk60sej6ia1dmemim0pr3qej404gmai0/foo/bar")).toEqual({
             path: "/foo/bar",
             skylink: "AQCYCPSmSMfmZjOKLX4zoYHHTNJQW2daVgZ2PTpkASFlSA",
           });

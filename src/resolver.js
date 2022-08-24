@@ -1,4 +1,5 @@
 const isValidDomain = require("is-valid-domain");
+const { convertSkylinkToBase64 } = require("skynet-js");
 const { dnsResolveTxt } = require("./dnsResolveTxt");
 const logger = require("./logger");
 
@@ -95,6 +96,11 @@ class Resolver {
     } else if (matchSkylinkUri) {
       response.skylink = matchSkylinkUri.groups.skylink;
       response.path = matchSkylinkUri.groups.path ?? "/";
+    }
+
+    // convert skylink to base64 if it is base32 encoded (55 characters long)
+    if (response.skylink?.length === 55) {
+      response.skylink = convertSkylinkToBase64(response.skylink);
     }
 
     if (dnslinkSponsors.length === 1) {

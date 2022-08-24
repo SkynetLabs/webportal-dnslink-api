@@ -7,6 +7,7 @@
     "express": "^4.18.1",
     "is-valid-domain": "^0.1.6",
     "lru-cache": "^7.14.0",
+    "skynet-js": "^4.3.0",
     "winston": "^3.8.1"
   },
   "devDependencies": {
