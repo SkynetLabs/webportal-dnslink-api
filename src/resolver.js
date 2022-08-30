@@ -1,17 +1,18 @@
-const dns = require("dns");
 const isValidDomain = require("is-valid-domain");
-
+const { convertSkylinkToBase64 } = require("skynet-js");
+const { dnsResolveTxt } = require("./dnsResolveTxt");
 const logger = require("./logger");
 
 const dnslinkNamespace = "skynet-ns";
 const sponsorNamespace = "skynet-sponsor-key";
 const dnslinkRegExp = new RegExp(`^dnslink=/${dnslinkNamespace}/.+$`);
 const sponsorRegExp = new RegExp(`^${sponsorNamespace}=[a-zA-Z0-9]+$`);
-const dnslinkSkylinkRegExp = new RegExp(`^dnslink=/${dnslinkNamespace}/([a-zA-Z0-9_-]{46}|[a-z0-9]{55})`);
+const skylinkMatcher = "[a-z0-9]{55}|[a-zA-Z0-9-_]{46}";
+const dnslinkSkylinkRegExp = new RegExp(`^dnslink=/${dnslinkNamespace}/(${skylinkMatcher})`);
+const uriSkylinkRegExp = new RegExp(`^/(?<skylink>${skylinkMatcher})(?<path>/.*)?`);
 const hint = `valid example: dnslink=/${dnslinkNamespace}/3ACpC9Umme41zlWUgMQh1fw0sNwgWwyfDDhRQ9Sppz9hjQ`;
 
 class InvalidRequestError extends Error {}
-class ResolutionError extends Error {}
 class NoSkynetDNSLinksFoundError extends Error {}
 class MultipleSkylinksError extends Error {}
 class InvalidSkylinkError extends Error {}
@@ -33,105 +34,87 @@ class Resolver {
    * @property {boolean} [sponsor] - Sponsor key configured for the given domain (if any).
    *
    * @param {string} domain Domain name to be checked for DNS link records.
+   * @param {string} uri Optional uri string passed from the client.
    * @returns {Promise<ResolutionResult>}
    */
-  async resolve(domain) {
+  async resolve(domain, uri) {
     const lookup = `_dnslink.${domain}`;
+    const addresses = await dnsResolveTxt(lookup);
 
-    return new Promise((resolve, reject) => {
-      dns.resolveTxt(lookup, (error, addresses) => {
-        if (error) {
-          // If domain name isn't configured with a TXT record, raise an error
-          if (error.code === "ENOTFOUND") {
-            return reject(new ResolutionError(`ENOTFOUND: ${lookup} TXT record doesn't exist`));
-          }
+    /**
+     * Domain has TXT records configured, but we need to filter out those that don't match our convention
+     * specified by regular expressions above:
+     *  - dnslink=/skynet-ns/<skylink>, or
+     *  - dnslink=/skynet-sponsor-key/<sponsor-key>
+     */
+    const records = addresses.flat();
+    const dnslinkSkylinks = records.filter((record) => dnslinkRegExp.test(record));
+    const dnslinkSponsors = records.filter((record) => sponsorRegExp.test(record));
 
-          // If domain name could not be resolved, raise an error
-          if (error.code === "ENODATA") {
-            return reject(new ResolutionError(`ENODATA: ${lookup} dns lookup returned no data`));
-          }
+    // match a skylink from the uri to use when dnslink does not define one
+    const matchSkylinkUri = uri ? uri.match(uriSkylinkRegExp) : null;
 
-          // If TXT record resolution fails for any other reason, raise an error
-          return reject(new ResolutionError(`Failed to fetch ${lookup} TXT record: ${error.message}`));
-        }
+    // We currently only allow a single skylink to be tied to a domain name.
+    // If there are more skylinks configured, raise an error.
+    if (dnslinkSkylinks.length > 1) {
+      throw new MultipleSkylinksError(
+        `Multiple TXT records with valid skynet dnslink found for ${lookup}, only one allowed`
+      );
+    }
 
-        // The domain name is successfully resolved, but it's not necessarily configured with any TXT records.
-        // Let's validate that before proceeding.
-        if (addresses.length === 0) {
-          return reject(new ResolutionError(`No TXT record found for ${lookup}`));
-        }
+    // We currently only allow a single sponsor key to be configured with a given domain name.
+    // If there are more, raise an error.
+    if (dnslinkSponsors.length > 1) {
+      throw new MultipleSponsorKeyRecordsError(
+        `Multiple TXT records with valid sponsor key found for ${lookup}, only one allowed`
+      );
+    }
 
-        /**
-         * Domain has TXT records configured, but we need to filter out those that don't match our convention
-         * specified by regular expressions above:
-         *  - dnslink=/skynet-ns/<skylink>, or
-         *  - dnslink=/skynet-sponsor-key/<sponsor-key>
-         */
-        const records = addresses.flat();
-        const dnslinkSkylinks = records.filter((record) => dnslinkRegExp.test(record));
-        const dnslinkSponsors = records.filter((record) => sponsorRegExp.test(record));
+    // If there are no dnslink records configured with our namespaces, we raise an error.
+    if (dnslinkSkylinks.length === 0 && dnslinkSponsors.length === 0 && matchSkylinkUri === null) {
+      throw new NoSkynetDNSLinksFoundError(
+        `TXT records for ${lookup} found but none of them contained valid skynet dnslink - ${hint}`
+      );
+    }
 
-        // We currently only allow a single skylink to be tied to a domain name.
-        // If there are more skylinks configured, raise an error.
-        if (dnslinkSkylinks.length > 1) {
-          return reject(
-            new MultipleSkylinksError(
-              `Multiple TXT records with valid skynet dnslink found for ${lookup}, only one allowed`
-            )
-          );
-        }
+    // Prepare response object and default to uri as path if provided
+    const response = { path: uri };
 
-        // We currently only allow a single sponsor key to be configured with a given domain name.
-        // If there are more, raise an error.
-        if (dnslinkSponsors.length > 1) {
-          return reject(
-            new MultipleSponsorKeyRecordsError(
-              `Multiple TXT records with valid sponsor key found for ${lookup}, only one allowed`
-            )
-          );
-        }
+    if (dnslinkSkylinks.length === 1) {
+      const [dnslink] = dnslinkSkylinks;
+      const matchSkylink = dnslink.match(dnslinkSkylinkRegExp);
 
-        // If there are no dnslink records configured with our namespaces, we raise an error.
-        if (dnslinkSkylinks.length === 0 && dnslinkSponsors.length === 0) {
-          return reject(
-            new NoSkynetDNSLinksFoundError(
-              `TXT records for ${lookup} found but none of them contained valid skynet dnslink - ${hint}`
-            )
-          );
-        }
+      // Verify if the configured skylink is valid.
+      if (!matchSkylink) {
+        throw new InvalidSkylinkError(
+          `TXT record with skynet dnslink for ${lookup} contains invalid skylink - ${hint}`
+        );
+      }
 
-        // Prepare response object
-        const response = {};
+      // Add skylink to response object
+      response.skylink = matchSkylink[1];
+    } else if (matchSkylinkUri) {
+      response.skylink = matchSkylinkUri.groups.skylink;
+      response.path = matchSkylinkUri.groups.path ?? "/";
+    }
 
-        if (dnslinkSkylinks.length === 1) {
-          const [dnslinkSkylink] = dnslinkSkylinks;
-          const matchSkylink = dnslinkSkylink.match(dnslinkSkylinkRegExp);
+    // convert skylink to base64 if it is base32 encoded (55 characters long)
+    if (response.skylink?.length === 55) {
+      response.skylink = convertSkylinkToBase64(response.skylink);
+    }
 
-          // Verify if the configured skylink is valid.
-          if (!matchSkylink) {
-            return reject(
-              new InvalidSkylinkError(`TXT record with skynet dnslink for ${lookup} contains invalid skylink - ${hint}`)
-            );
-          }
+    if (dnslinkSponsors.length === 1) {
+      // Extract just the key part from the record and add it to response object
+      response.sponsor = dnslinkSponsors[0].substring(dnslinkSponsors[0].indexOf("=") + 1);
+    }
 
-          // Add skylink to response object
-          response.skylink = matchSkylink[1];
-        }
+    // Prepare logger message with skylink and sponsor key records if they exist
+    const info = [`skylink: ${response.skylink}`, `sponsor: ${response.sponsor}`].filter(Boolean).join(" | ");
 
-        if (dnslinkSponsors.length === 1) {
-          // Extract just the key part from the record and add it to response object
-          response.sponsor = dnslinkSponsors[0].substring(dnslinkSponsors[0].indexOf("=") + 1);
-        }
+    // Log the response to the console
+    logger.info(`${domain} => ${info}`);
 
-        // Prepare logger message with skylink and sponsor key records if they exist
-        const info = [`skylink: ${response.skylink}`, `sponsor: ${response.sponsor}`].filter(Boolean).join(" | ");
-
-        // Log the response to the console
-        logger.info(`${domain} => ${info}`);
-
-        return resolve(response);
-      });
-    });
+    return response;
   }
 
   /**
@@ -153,7 +136,6 @@ class Resolver {
 module.exports = {
   Resolver,
   InvalidRequestError,
-  ResolutionError,
   NoSkynetDNSLinksFoundError,
   MultipleSkylinksError,
   InvalidSkylinkError,
