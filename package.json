@@ -8,7 +8,7 @@
     "is-valid-domain": "^0.1.6",
     "lru-cache": "^7.14.0",
     "skynet-js": "^4.3.0",
-    "winston": "^3.8.1"
+    "winston": "^3.8.2"
   },
   "devDependencies": {
     "codecov": "^3.8.3",
