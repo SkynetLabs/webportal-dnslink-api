@@ -2460,10 +2460,10 @@ post-me@^0.4.5:
   resolved "https://registry.yarnpkg.com/post-me/-/post-me-0.4.5.tgz#6171b721c7b86230c51cfbe48ddea047ef8831ce"
   integrity sha512-XgPdktF/2M5jglgVDULr9NUb/QNv3bY3g6RG22iTb5MIMtB07/5FJB5fbVmu5Eaopowc6uZx7K3e7x1shPwnXw==
 
-prettier@^2.7.1:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.7.1.tgz#e235806850d057f97bb08368a4f7d899f7760c64"
-  integrity sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==
+prettier@^2.8.0:
+  version "2.8.0"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.0.tgz#c7df58393c9ba77d6fba3921ae01faf994fb9dc9"
+  integrity sha512-9Lmg8hTFZKG0Asr/kW9Bp8tJjRVluO8EJQVfY2T7FMw9T5jy4I/Uvx0Rca/XWf50QQ1/SS48+6IJWnrb+2yemA==
 
 pretty-format@^29.0.1:
   version "29.0.1"
